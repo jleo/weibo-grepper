@@ -41,6 +41,16 @@ public class FamousDB {
         insert(result);
     }
 
+    public void doWithEach(Each each){
+        BasicDBObject sampleObject = new BasicDBObject();
+        DBCursor cursor = db.getCollection(urlCollectionName).find(sampleObject);
+        while (cursor.hasNext()){
+            DBObject object = cursor.next();
+            each.doWith(object);
+
+        }
+    }
+
     public void insert(Famous result) {
         BasicDBObject sampleObject = new BasicDBObject();
         sampleObject.put("uid", result.getUid());
