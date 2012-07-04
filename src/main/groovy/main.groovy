@@ -9,7 +9,7 @@ import Tools
  * To change this template use File | Settings | File Templates.
  */
 
-def weibo_main_url = 'http://verified.weibo.com/'
+def  weibo_main_url = 'http://verified.weibo.com/'
 
 def first_last(text) {
     resutls = []
@@ -50,7 +50,7 @@ def first(def url) {
 
             while (matcher2.find()) {
                 content2 = matcher2.group()
-                println content2
+                //println content2
                 def url_right = content2.substring(content2.indexOf("a_inner\\\"> <a href=\\\"") + "a_inner\\\"> <a href=\\\"".length(), content2.indexOf("\" class=\\\"a_link\\\""))
                 def classify = content2.substring(content2.indexOf("class=\\\"a_link\\\">") + "class=\\\"a_link\\\">".length(), content2.indexOf("<em class=\\\"nav_arr\\"))
                 url_right = url_right.replaceAll('\\\\', '')
@@ -119,17 +119,17 @@ def second(def url) {
 
 /*第三级，拼接url*/
 
-def thrid(def base_url) {
+def thrid(def base_url,def clist) {
 
     _url = base_url + "&rt=0"
     println _url
     ("a".."z").each {num ->
         url = _url + "&letter=" + num
-        println url
+        thrid_last(url, clist)
     }
 }
 
-def thrid_get_persons(def content){
+def thrid_get_persons(def content, def clist){
     def pattern1 = ~/select_user.*?(?=name W_linkc)/
     def matcher1 = content =~ pattern1
 
@@ -146,17 +146,17 @@ def thrid_get_persons(def content){
 
         title = Tools.unicodeToString(title)
         println   "$uid $title $weibo_url $weibo_avatar"
-
+        println clist
     }
 
 }
 
 /*处理最后页面，抓取人*/
-def thrid_last(def url, def page_num = 1) {
-    println url
+def thrid_last(def url, def clist ,def page_num = 1) {
+    println "handle$url"
     url.toURL().eachLine {line ->
         content = line.toString()
-        thrid_get_persons(content)
+        thrid_get_persons(content, clist)
         p1 = "<a bpfilter=\\\"true\\\" class=\\\"W_btn_a\\\" href=\\\""
         p2 = "\\\""
         if (content.contains(p1)) {
@@ -165,7 +165,7 @@ def thrid_last(def url, def page_num = 1) {
 
             nextpagenum = to_url.substring(to_url.indexOf("page=") + "page=".length())
             if (nextpagenum > page_num) {
-                thrid_last(to_url, nextpagenum)
+                thrid_last(to_url,clist, nextpagenum)
             }
         }
 
@@ -176,7 +176,7 @@ def run_main(){
     error_list =[]
     def weibo_main_url = 'http://verified.weibo.com/'
     mlist = first( weibo_main_url)
-    println mlist
+    //println mlist
     for (item in mlist){
         url =  weibo_main_url+item[0][1..-1]
         classify =  item[1]
@@ -190,24 +190,26 @@ def run_main(){
             try{
                 _res = second(_url)
                 if(_res ==null ){
-
+                    println _url
+                    println "$tag $classify $_classify"
+                    //thrid(_url)
                 }else{
                     _item<<_res
+                    println "$tag $classify $_classify"
+                    for (r in _res){
+                        println"@@"
+                        uurl = weibo_main_url[0..-2]+r[0]
+                        println r[1]
+                        thrid(uurl,[tag,classify,_classify,r[1]])
+
+
+                    }
                 }
             }
             catch (ex) {
                 ex.printStackTrace()
-                try{
-                    _res = second(_url)
-                    if(_res ==null ){
+                error_list<<[_url,_classify]
 
-                    }else{
-                        _item<<_res
-                    }
-                }  catch (ex2){
-                    ex2.printStackTrace()
-                    error_list<<[_url,_classify]
-                }
 
 
 
@@ -218,7 +220,7 @@ def run_main(){
         }
 
     }
-    println "#############"
+
 
     save_file("mlist.obj",mlist)
 }
@@ -227,22 +229,15 @@ def run_main(){
 //second("http://verified.weibo.com/fame/yingshi")
 //thrid("/fame/peiyinyanyuan/?srt=4")
 //thrid_last("http://verified.weibo.com/fame/yanyuan/?rt=0&srt=4&letter=l")
-class Mlist implements Serializable  {
-    def mlist
-}
+
 
 def save_file(fname="mlist.obj", mlist){
-    def test1= new Mlist(mlist: mlist)
-    new File(fname).withObjectOutputStream { out ->
-        out << mlist
-    }
+    new File(fname).write(mlist.toString())
+
 }
 def load_from_file(fname="mlist.obj") {
-    new File("config.txt").withObjectInputStream { instream ->
-        instream.eachObject {
-            println it
-        }
-    }
+      return new File(fname).readLines()
+
 }
 
 
@@ -251,5 +246,9 @@ def load_from_file(fname="mlist.obj") {
 
 
 //save_file()
+//run_main()
+
+//def res = load_from_file("mlist.obj")
+
+
 run_main()
-//println load_from_file2("mlist.obj")
