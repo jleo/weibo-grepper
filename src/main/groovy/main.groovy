@@ -14,7 +14,9 @@ import it.tika.weibo.grepper.Famous
 
 def  weibo_main_url = 'http://verified.weibo.com/'
 
+
 def first_last(text) {
+
     resutls = []
     def pattern = ~"ct_b.*?\\/li>"
     def matcher = text =~ pattern
@@ -123,12 +125,22 @@ def second(def url) {
 /*第三级，拼接url*/
 
 def thrid(def base_url,def clist) {
-
-    _url = base_url + "&rt=0"
+    base_url = base_url.replaceAll("\" target=\"_new","")
+    _url=""
+    if(!base_url.contains("?")){
+        _url = base_url + "?srt=4&rt=0"
+    }else{
+        _url = base_url + "&rt=0"
+    }
     println _url
     ("a".."z").each {num ->
         url = _url + "&letter=" + num
-        thrid_last(url, clist)
+        try{
+            thrid_last(url, clist)
+        }catch(ex){
+            ex.printStackTrace()
+        }
+
     }
 }
 
@@ -157,13 +169,17 @@ def thrid_get_persons(def content, def clist){
 
         println   "$uid $title"
         println clist
+        def f = new File("r.txt")
+        f.append("# $uid $title $weibo_url $weibo_avatar\n")
+        f.append(clist.toString()+"\n")
+
     }
 
 }
 
 /*处理最后页面，抓取人*/
 def thrid_last(def url, def clist ,def page_num = 1) {
-    println "handle$url"
+    println "handle $url"
     url.toURL().eachLine {line ->
         content = line.toString()
         thrid_get_persons(content, clist)
@@ -202,7 +218,8 @@ def run_main(){
                 if(_res ==null ){
                     println _url
                     println "$tag $classify $_classify"
-                    //thrid(_url)
+
+                    thrid(_url,[tag,classify,_classify])
                 }else{
                     _item<<_res
                     println "$tag $classify $_classify"
@@ -262,3 +279,5 @@ def load_from_file(fname="mlist.obj") {
 
 
 run_main()
+
+
