@@ -136,6 +136,9 @@ def thrid(def base_url,def clist) {
             thrid_last(url, clist)
         }catch(ex){
             ex.printStackTrace()
+            errorfile= new File("error.txt")
+            errorfile.append("#$url\n")
+            errorfile.append(clist.toString()+"\n")
         }
 
     }
