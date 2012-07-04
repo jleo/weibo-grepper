@@ -11,7 +11,9 @@ import Tools
 
 def  weibo_main_url = 'http://verified.weibo.com/'
 
+
 def first_last(text) {
+
     resutls = []
     def pattern = ~"ct_b.*?\\/li>"
     def matcher = text =~ pattern
@@ -125,7 +127,12 @@ def thrid(def base_url,def clist) {
     println _url
     ("a".."z").each {num ->
         url = _url + "&letter=" + num
-        thrid_last(url, clist)
+        try{
+            thrid_last(url, clist)
+        }catch(ex){
+            ex.printStackTrace()
+        }
+
     }
 }
 
@@ -147,6 +154,10 @@ def thrid_get_persons(def content, def clist){
         title = Tools.unicodeToString(title)
         println   "$uid $title $weibo_url $weibo_avatar"
         println clist
+        def f = new File("r.txt")
+        f.append("# $uid $title $weibo_url $weibo_avatar\n")
+        f.append(clist+"\n")
+
     }
 
 }
@@ -192,7 +203,8 @@ def run_main(){
                 if(_res ==null ){
                     println _url
                     println "$tag $classify $_classify"
-                    //thrid(_url)
+
+                    thrid(_url,[tag,classify,_classify])
                 }else{
                     _item<<_res
                     println "$tag $classify $_classify"
@@ -251,4 +263,6 @@ def load_from_file(fname="mlist.obj") {
 //def res = load_from_file("mlist.obj")
 
 
-run_main()
+//run_main()
+
+
