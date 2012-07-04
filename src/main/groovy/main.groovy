@@ -1,5 +1,6 @@
-import sun.nio.cs.UnicodeEncoder
 import Tools
+import it.tika.weibo.grepper.FamousDB
+import it.tika.weibo.grepper.Famous
 
 /**
  * Created with IntelliJ IDEA.
@@ -8,6 +9,8 @@ import Tools
  * Time: 下午10:24
  * To change this template use File | Settings | File Templates.
  */
+
+
 
 def  weibo_main_url = 'http://verified.weibo.com/'
 
@@ -145,7 +148,14 @@ def thrid_get_persons(def content, def clist){
         weibo_avatar = weibo_avatar.replaceAll('\\\\', '').replaceAll("&amp;", "&")
 
         title = Tools.unicodeToString(title)
-        println   "$uid $title $weibo_url $weibo_avatar"
+
+        def famous = new Famous(uid: uid, name: title, url: weibo_url)
+        Set s = new HashSet()
+        s.addAll(clist[1..-1])
+        famous.setFields(s)
+        FamousDB.instance.addLog(famous)
+
+        println   "$uid $title"
         println clist
     }
 
