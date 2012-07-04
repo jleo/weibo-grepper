@@ -263,6 +263,6 @@ def load_from_file(fname="mlist.obj") {
 //def res = load_from_file("mlist.obj")
 
 
-//run_main()
+run_main()
 
 
