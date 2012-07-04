@@ -122,8 +122,13 @@ def second(def url) {
 /*第三级，拼接url*/
 
 def thrid(def base_url,def clist) {
-
-    _url = base_url + "&rt=0"
+    base_url = base_url.replaceAll("\" target=\"_new","")
+    _url=""
+    if(!base_url.contains("?")){
+        _url = base_url + "?srt=4&rt=0"
+    }else{
+        _url = base_url + "&rt=0"
+    }
     println _url
     ("a".."z").each {num ->
         url = _url + "&letter=" + num
@@ -156,7 +161,7 @@ def thrid_get_persons(def content, def clist){
         println clist
         def f = new File("r.txt")
         f.append("# $uid $title $weibo_url $weibo_avatar\n")
-        f.append(clist+"\n")
+        f.append(clist.toString()+"\n")
 
     }
 
@@ -164,7 +169,7 @@ def thrid_get_persons(def content, def clist){
 
 /*处理最后页面，抓取人*/
 def thrid_last(def url, def clist ,def page_num = 1) {
-    println "handle$url"
+    println "handle $url"
     url.toURL().eachLine {line ->
         content = line.toString()
         thrid_get_persons(content, clist)
