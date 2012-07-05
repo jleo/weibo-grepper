@@ -172,19 +172,26 @@ def thrid_get_persons(def content, def clist){
 
         title = Tools.unicodeToString(title)
 
-//        def famous = new Famous(uid: uid, name: title, url: weibo_url)
-//        Set s = new HashSet()
-//        s.addAll(clist[1..-1])
-//        famous.setFields(s)
-//        FamousDB.instance.addLog(famous)
+
+        def famous = new Famous(uid: uid, name: title, url: weibo_url, kind:_from)
+        Set s = new HashSet()
+
+        s.addAll(clist[1..-1])
+        if(clist[0] == "industry")
+            famous.setFields(s)
+        if(clist[0] == 'area')
+            famous.setAreas(s)
+
+        FamousDB.instance.addLog(famous)
+
 
         println   "$uid $title $weibo_url $weibo_avatar"
         println "_from: "+_from
         println clist
 
-        def f = new File("r3.txt")
-        f.append("# $uid $title $weibo_url $weibo_avatar\n")
-        f.append(clist.toString()+"\n")
+//        def f = new File("r3.txt")
+//        f.append("# $uid $title $weibo_url $weibo_avatar\n")
+//        f.append(clist.toString()+"\n")
 
     }
 
