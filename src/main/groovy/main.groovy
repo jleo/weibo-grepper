@@ -91,6 +91,7 @@ def getUrl_rightAndClassify(content, p1, p2, p3, p4) {
         classify = Tools.unicodeToString(classify.toString())
         println url_right
         println classify
+
         return [url_right, classify ]
     }
 
@@ -135,7 +136,11 @@ def thrid(def base_url,def clist) {
     }else{
         _url = base_url + "&rt=0"
     }
+
     println _url
+
+    _url=_url.replaceAll("srt=3","srt=4")
+    println "after srt=3 to srt=4: "+_url
     ("a".."z").each {num ->
         url = _url + "&letter=" + num
         try{
@@ -174,7 +179,9 @@ def thrid_get_persons(def content, def clist){
 //        FamousDB.instance.addLog(famous)
 
         println   "$uid $title $weibo_url $weibo_avatar"
+        println "_from: "+_from
         println clist
+
         def f = new File("r3.txt")
         f.append("# $uid $title $weibo_url $weibo_avatar\n")
         f.append(clist.toString()+"\n")
@@ -204,9 +211,63 @@ def thrid_last(def url, def clist ,def page_num = 1) {
     }
 }
 
-def run_main(def weibo_main_url,boolean  notFromHallOfFame){
-    error_list =[]
 
+def do_something_when_fame ={   def _item,def url, def classify, def tag, def  _url,def  _classify, def  weibo_main_url,def error_list->
+    if(tag=="area" ){
+        try{
+            println "$tag $classify $_classify"
+            thrid(_url,[tag,classify,_classify])
+        }
+        catch (ex) {
+            ex.printStackTrace()
+            error_list<<[_url,_classify]
+        }
+
+    }else{
+        try{
+            _res = second(_url)
+            if(_res ==null ){
+                println _url
+                println "$tag $classify $_classify"
+
+                thrid(_url,[tag,classify,_classify])
+            }else{
+                _item<<_res
+                println "$tag $classify $_classify"
+                for (r in _res){
+                    println"@@"
+                    uurl = weibo_main_url[0..-2]+r[0]
+                    println r[1]
+                    thrid(uurl,[tag,classify,_classify,r[1]])
+                }
+            }
+        }
+        catch (ex) {
+            ex.printStackTrace()
+            error_list<<[_url,_classify]
+        }
+    }
+}
+
+
+def do_something_when_brand={   def _item,def url, def classify, def tag, def  _url,def  _classify, def  weibo_main_url,def error_list->
+
+        try{
+            println "$tag $classify $_classify"
+            thrid(_url,[tag,classify,_classify])
+        }
+        catch (ex) {
+            ex.printStackTrace()
+            error_list<<[_url,_classify]
+        }
+
+
+}
+
+
+
+def run_main(def weibo_main_url,def do_something,def _from){
+    error_list =[]
 //    int firstLevelSkip = 13
 //    int secondLevelSkip = 3
     int firstLevelSkip = 0
@@ -226,45 +287,7 @@ def run_main(def weibo_main_url,boolean  notFromHallOfFame){
             println "#############"
             println _url
             println _classify
-            if(tag=="area" || notFromHallOfFame){
-                try{
-                    println "$tag $classify $_classify"
-                    thrid(_url,[tag,classify,_classify])
-                }
-                catch (ex) {
-                    ex.printStackTrace()
-                    error_list<<[_url,_classify]
-                }
-
-            }else{
-                try{
-                    _res = second(_url)
-                    if(_res ==null ){
-                        println _url
-                        println "$tag $classify $_classify"
-
-                        thrid(_url,[tag,classify,_classify])
-                    }else{
-                        _item<<_res
-                        println "$tag $classify $_classify"
-                        for (r in _res){
-                            println"@@"
-                            uurl = weibo_main_url[0..-2]+r[0]
-                            println r[1]
-                            thrid(uurl,[tag,classify,_classify,r[1]])
-                        }
-                    }
-                }
-                catch (ex) {
-                    ex.printStackTrace()
-                    error_list<<[_url,_classify]
-                }
-
-            }
-
-
-
-
+            do_something(_item, url, classify, tag, _url, _classify,weibo_main_url ,error_list )
         }
 
     }
@@ -291,6 +314,46 @@ def load_from_file(fname="mlist.obj") {
 
 
 
+def nofame_first(def url) {
+    results = []
+    url.toURL().eachLine {line ->
+        def pattern1 = ~"nav_barMain.*?(?=nav_barMain)"
+        def matcher1 = line =~ pattern1
+        int i = 0
+        while (matcher1.find()) {
+
+            content = matcher1.group()
+            def pattern2 = ~/a_inner.*?(?=nav_aItem)|a_inner.*/
+            def matcher2 = content =~ pattern2
+
+            while (matcher2.find()) {
+
+                content2 = matcher2.group()
+                println content2
+                def url_right = content2.substring(content2.indexOf("a_inner\\\"> <a href=\\\"") + "a_inner\\\"> <a href=\\\"".length(), content2.indexOf("\" class=\\\"a_link\\\""))
+                def classify = content2.substring(content2.indexOf("class=\\\"a_link\\\">") + "class=\\\"a_link\\\">".length(), content2.indexOf("<em class=\\\"nav_arr\\"))
+                url_right = url_right.replaceAll('\\\\', '')
+
+                classify = Tools.unicodeToString(classify.toString())
+                //println url_right
+                //println classify
+                tag = i==0?"industry":"area"
+                println tag
+                println classify
+                //   if(tag == "area")     {
+                res = first_last(content2)
+                results<<[url_right, classify , tag,res]
+                println "==="
+                //    }
+            }
+            i = i+1
+
+        }
+
+
+    }
+    return results
+}
 
 
 //save_file()
@@ -299,8 +362,15 @@ def load_from_file(fname="mlist.obj") {
 //def res = load_from_file("mlist.obj")
 
 // media = "http://media.weibo.com/home/"
-//run_main("http://verified.weibo.com/")
-//run_main(media,true)
-// println first(media)
+
+
+
+//run_main("http://verified.weibo.com/",do_something_when_fame   ,_from="fame")  //抓fame的
+//run_main("http://verified.weibo.com/brand/",do_something_when_brand, _from="brand")          //抓brand的
+//run_main("http://verified.weibo.com/website/",do_something_when_brand, _from="website")          //抓website的
+
+//run_main("http://verified.weibo.com/agency/",do_something_when_brand, _from="agency")       //抓agency的
+run_main("http://verified.weibo.com/campus/",do_something_when_brand, _from="campus")      //抓campus的
+//println first("http://verified.weibo.com/brand/")
 //println second("http://verified.weibo.com/fame/yingshi")
-println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])
+//println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])
