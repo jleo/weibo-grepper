@@ -41,10 +41,9 @@ public class FamousDB {
         insert(result);
     }
 
-    public void doWithEach(Each each){
-        BasicDBObject sampleObject = new BasicDBObject();
+    public void doWithEach(BasicDBObject sampleObject, Each each) {
         DBCursor cursor = db.getCollection(urlCollectionName).find(sampleObject);
-        while (cursor.hasNext()){
+        while (cursor.hasNext()) {
             DBObject object = cursor.next();
             each.doWith(object);
 
@@ -54,25 +53,47 @@ public class FamousDB {
     public void insert(Famous result) {
         BasicDBObject sampleObject = new BasicDBObject();
         sampleObject.put("uid", result.getUid());
-        sampleObject.put("name", result.getName());
-        sampleObject.put("url", result.getUrl());
 
         DBCursor c = db.getCollection(urlCollectionName).find(sampleObject);
 
+
         if (!c.hasNext()) {
             try {
+                sampleObject.put("name", result.getName());
+                sampleObject.put("url", result.getUrl());
                 sampleObject.put("fields", result.getFields());
+                sampleObject.put("areas", result.getAreas());
+                sampleObject.put("relationStatus", result.getRelationStatus());
+
                 db.getCollection(urlCollectionName).insert(sampleObject);
             } catch (MongoException e) {
                 logger.log(Level.SEVERE, e.getMessage(), e);
             }
-        }else{
+        } else {
             DBObject object = c.next();
             List fields = (List) object.get("fields");
-            if(fields!=null && fields.size() != 0)
+            if (fields != null && fields.size() != 0) {
                 result.getFields().addAll(fields);
+                object.put("fields", result.getFields());
+            }
 
-            object.put("fields", result.getFields());
+            List areas = (List) object.get("areas");
+            if (areas != null && areas.size() != 0) {
+                result.getAreas().addAll(areas);
+                object.put("areas", result.getAreas());
+
+            }
+
+            if (result.getName() != null)
+                object.put("name", result.getName());
+
+            if (result.getUrl() != null)
+                object.put("url", result.getUrl());
+
+
+            if (result.getRelationStatus() != null)
+                object.put("relationStatus", result.getRelationStatus());
+
             db.getCollection(urlCollectionName).save(object);
         }
     }

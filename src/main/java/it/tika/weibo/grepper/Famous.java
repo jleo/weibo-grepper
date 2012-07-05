@@ -14,6 +14,17 @@ public class Famous {
     String uid;
     String name;
     Set fields = new HashSet();
+    String relationStatus;
+
+    public Set getAreas() {
+        return areas;
+    }
+
+    public void setAreas(Set areas) {
+        this.areas = areas;
+    }
+
+    Set areas = new HashSet();
     String url;
 
     public String getUid() {
@@ -46,5 +57,13 @@ public class Famous {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getRelationStatus() {
+        return relationStatus;
+    }
+
+    public void setRelationStatus(String relationStatus) {
+        this.relationStatus = relationStatus;
     }
 }

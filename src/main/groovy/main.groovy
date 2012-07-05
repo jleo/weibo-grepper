@@ -163,8 +163,13 @@ def thrid_get_persons(def content, def clist){
 
         def famous = new Famous(uid: uid, name: title, url: weibo_url)
         Set s = new HashSet()
+
         s.addAll(clist[1..-1])
-        famous.setFields(s)
+        if(clist[0] == "industry")
+            famous.setFields(s)
+        if(clist[0] == 'area')
+            famous.setAreas(s)
+
         FamousDB.instance.addLog(famous)
 
         println   "$uid $title"

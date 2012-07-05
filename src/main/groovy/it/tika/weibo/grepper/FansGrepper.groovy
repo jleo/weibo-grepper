@@ -42,9 +42,15 @@ class FansGrepper {
             }
             println fanSet.size()
         }
+        Famous famous = new Famous(uid: uid)
+        famous.relationStatus = "DONE"
+
+        FamousDB.instance.insert(famous)
+
         Relation r = new Relation(uid: uid)
         r.fans = fanSet.toList()
-
+        r.status = "UPDATED"
+        r.updateTime = new Date()
         RelationDB.instance.addLog(r)
     }
 

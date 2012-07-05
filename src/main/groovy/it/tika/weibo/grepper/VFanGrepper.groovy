@@ -1,6 +1,7 @@
 package it.tika.weibo.grepper
 
 import com.mongodb.DBObject
+import com.mongodb.BasicDBObject
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,8 +13,10 @@ import com.mongodb.DBObject
 class VFanGrepper {
     public static void main(String[] args) {
         SinaLogin.login("ggyyleo@gmail.com","3jf2hf1l")
+        BasicDBObject sampleObject = new BasicDBObject();
+        sampleObject.put("relationStatus","NEW");
 
-        FamousDB.instance.doWithEach([doWith:{DBObject object->
+        FamousDB.instance.doWithEach(sampleObject, [doWith:{DBObject object->
             String vuid = object.get("uid");
             FansGrepper grepper = new FansGrepper(uid:vuid);
             grepper.getFans()

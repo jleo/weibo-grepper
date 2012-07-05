@@ -45,8 +45,11 @@ public class RelationDB {
         BasicDBObject sampleObject = new BasicDBObject();
         sampleObject.put("uid", result.getUid());
 
+
         DBCursor c = db.getCollection(urlCollectionName).find(sampleObject);
         if (!c.hasNext()) {
+            sampleObject.put("relationStatus", result.getStatus());
+            sampleObject.put("updateTime",result.getUpdateTime());
             sampleObject.put("fans", result.getFans());
             try {
                 db.getCollection(urlCollectionName).insert(sampleObject);
@@ -57,6 +60,10 @@ public class RelationDB {
             DBObject object = c.next();
             result.getFans().addAll((List) object.get("fans"));
             object.put("fans", result.getFans());
+
+            object.put("relationStatus", result.getStatus());
+            object.put("updateTime",result.getUpdateTime());
+
             db.getCollection(urlCollectionName).save(object);
         }
     }
