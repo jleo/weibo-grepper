@@ -9,8 +9,6 @@ import org.htmlcleaner.*
  * Time: 下午10:24
  * To change this template use File | Settings | File Templates.
  */
-
-
 def first_last(text) {
 
     resutls = []
@@ -29,7 +27,7 @@ def first_last(text) {
 
         println url_right
         println classify
-        resutls <<[url_right,classify]
+        resutls << [url_right, classify]
     }
     return resutls
 }
@@ -61,16 +59,16 @@ def first = {   def url ->
                 classify = Tools.unicodeToString(classify.toString())
                 //println url_right
                 //println classify
-                tag = i==0?"industry":"area"
+                tag = i == 0 ? "industry" : "area"
                 println tag
                 println classify
-             //   if(tag == "area")     {
-                    res = first_last(content2)
-                    results<<[url_right, classify , tag,res]
-                    println "==="
-            //    }
+                //   if(tag == "area")     {
+                res = first_last(content2)
+                results << [url_right, classify, tag, res]
+                println "==="
+                //    }
             }
-            i = i+1
+            i = i + 1
 
         }
 
@@ -90,7 +88,7 @@ def getUrl_rightAndClassify(content, p1, p2, p3, p4) {
         println url_right
         println classify
 
-        return [url_right, classify ]
+        return [url_right, classify]
     }
 
 }
@@ -104,20 +102,20 @@ def second(def url) {
         //println line
         def pattern1 = ~/cat_B.*?(?=span)/
         def matcher1 = line =~ pattern1
-        if( matcher1.size() == 1){
+        if (matcher1.size() == 1) {
             return null
         }
         matcher1 = line =~ pattern1
         while (matcher1.find()) {
             content = matcher1.group()
-           // println content
+            // println content
             p1 = "href=\\\"\\"
             p2 = "\\\">"
             p3 = "\\\">"
             p4 = "<\\/a>"
-            item =  getUrl_rightAndClassify(content, p1, p2, p3, p4)
+            item = getUrl_rightAndClassify(content, p1, p2, p3, p4)
             if (item != null)
-            results << item
+                results << item
         }
 
     }
@@ -126,65 +124,65 @@ def second(def url) {
 
 /*第三级，拼接url*/
 
-def thrid(def base_url,def clist) {
-    base_url = base_url.replaceAll("\" target=\"_new","")
-    _url=""
-    if(!base_url.contains("?")){
+def thrid(def base_url, def clist) {
+    base_url = base_url.replaceAll("\" target=\"_new", "")
+    _url = ""
+    if (!base_url.contains("?")) {
         _url = base_url + "?srt=4&rt=0"
-    }else{
+    } else {
         _url = base_url + "&rt=0"
     }
 
     println _url
 
-    _url=_url.replaceAll("srt=3","srt=4")
-    println "after srt=3 to srt=4: "+_url
+    _url = _url.replaceAll("srt=3", "srt=4")
+    println "after srt=3 to srt=4: " + _url
     ("a".."z").each {num ->
         url = _url + "&letter=" + num
-        try{
+        try {
             thrid_last(url, clist)
-        }catch(ex){
+        } catch (ex) {
             ex.printStackTrace()
-            errorfile= new File("error.txt")
+            errorfile = new File("error.txt")
             errorfile.append("#$url\n")
-            errorfile.append(clist.toString()+"\n")
+            errorfile.append(clist.toString() + "\n")
         }
 
     }
 }
 
-def thrid_get_persons(def content, def clist){
+def thrid_get_persons(def content, def clist) {
     def pattern1 = ~/select_user.*?(?=name W_linkc)/
     def matcher1 = content =~ pattern1
 
     while (matcher1.find()) {
         _content = matcher1.group()
 
-        uid =  _content.substring(_content.indexOf("uid=")+"uid=".length(), _content.indexOf("\\\"",_content.indexOf("uid=")+"uid=".length()))
-        title = _content.substring(_content.indexOf("title=\\\"")+"title=\\\"".length(), _content.indexOf("\\\"",_content.indexOf("title=\\\"")+"title=\\\"".length()))
-        weibo_url = _content.substring(_content.indexOf("a target=\\\"_blank\\\" href=\\\"")+"a target=\\\"_blank\\\" href=\\\"".length(), _content.indexOf("\\\"",_content.indexOf("a target=\\\"_blank\\\" href=\\\"")+"a target=\\\"_blank\\\" href=\\\"".length()))
+        uid = _content.substring(_content.indexOf("uid=") + "uid=".length(), _content.indexOf("\\\"", _content.indexOf("uid=") + "uid=".length()))
+        title = _content.substring(_content.indexOf("title=\\\"") + "title=\\\"".length(), _content.indexOf("\\\"", _content.indexOf("title=\\\"") + "title=\\\"".length()))
+        weibo_url = _content.substring(_content.indexOf("a target=\\\"_blank\\\" href=\\\"") + "a target=\\\"_blank\\\" href=\\\"".length(), _content.indexOf("\\\"", _content.indexOf("a target=\\\"_blank\\\" href=\\\"") + "a target=\\\"_blank\\\" href=\\\"".length()))
         weibo_url = weibo_url.replaceAll('\\\\', '').replaceAll("&amp;", "&")
 
-        weibo_avatar =  _content.substring(_content.indexOf("class_card\\\" src=\\\"")+"class_card\\\" src=\\\"".length(), _content.indexOf("\\\"",_content.indexOf("class_card\\\" src=\\\"")+"class_card\\\" src=\\\"".length()))
+        weibo_avatar = _content.substring(_content.indexOf("class_card\\\" src=\\\"") + "class_card\\\" src=\\\"".length(), _content.indexOf("\\\"", _content.indexOf("class_card\\\" src=\\\"") + "class_card\\\" src=\\\"".length()))
         weibo_avatar = weibo_avatar.replaceAll('\\\\', '').replaceAll("&amp;", "&")
 
         title = Tools.unicodeToString(title)
 
 
-        def famous = new Famous(uid: uid, name: title, url: weibo_url, kind:_from)
+        def famous = new Famous(uid: uid, name: title, url: weibo_url, kind: _from)
         Set s = new HashSet()
 
         s.addAll(clist[1..-1])
-        if(clist[0] == "industry")
+        if (clist[0] == "industry")
             famous.setFields(s)
-        if(clist[0] == 'area')
+        if (clist[0] == 'area')
             famous.setAreas(s)
 
         FamousDB.instance.addLog(famous)
 
 
-        println   "$uid $title $weibo_url $weibo_avatar"
-        println "_from: "+_from
+        println "$uid $title $weibo_url $weibo_avatar"
+        println "_from: " + _from
         println clist
 
 //        def f = new File("r3.txt")
@@ -196,7 +194,8 @@ def thrid_get_persons(def content, def clist){
 }
 
 /*处理最后页面，抓取人*/
-def thrid_last(def url, def clist ,def page_num = 1) {
+
+def thrid_last(def url, def clist, def page_num = 1) {
     println "handle $url"
     url.toURL().eachLine {line ->
         content = line.toString()
@@ -209,7 +208,7 @@ def thrid_last(def url, def clist ,def page_num = 1) {
 
             nextpagenum = to_url.substring(to_url.indexOf("page=") + "page=".length())
             if (nextpagenum > page_num) {
-                thrid_last(to_url,clist, nextpagenum)
+                thrid_last(to_url, clist, nextpagenum)
             }
         }
 
@@ -217,113 +216,111 @@ def thrid_last(def url, def clist ,def page_num = 1) {
 }
 
 
-def do_something_when_fame ={   def _item,def url, def classify, def tag, def  _url,def  _classify, def  weibo_main_url,def error_list->
-    if(tag=="area" ){
-        try{
+def do_something_when_fame = {   def _item, def url, def classify, def tag, def _url, def _classify, def weibo_main_url, def error_list ->
+    if (tag == "area") {
+        try {
             println "$tag $classify $_classify"
-            thrid(_url,[tag,classify,_classify])
+            thrid(_url, [tag, classify, _classify])
         }
         catch (ex) {
             ex.printStackTrace()
-            error_list<<[_url,_classify]
+            error_list << [_url, _classify]
         }
 
-    }else{
-        try{
+    } else {
+        try {
             _res = second(_url)
-            if(_res ==null ){
+            if (_res == null) {
                 println _url
                 println "$tag $classify $_classify"
 
-                thrid(_url,[tag,classify,_classify])
-            }else{
-                _item<<_res
+                thrid(_url, [tag, classify, _classify])
+            } else {
+                _item << _res
                 println "$tag $classify $_classify"
-                for (r in _res){
-                    println"@@"
-                    uurl = weibo_main_url[0..-2]+r[0]
+                for (r in _res) {
+                    println "@@"
+                    uurl = weibo_main_url[0..-2] + r[0]
                     println r[1]
-                    thrid(uurl,[tag,classify,_classify,r[1]])
+                    thrid(uurl, [tag, classify, _classify, r[1]])
                 }
             }
         }
         catch (ex) {
             ex.printStackTrace()
-            error_list<<[_url,_classify]
+            error_list << [_url, _classify]
         }
     }
 }
 
+//    brand   website  agency    campus  media  均可用
+def do_something_when_brand = {   def _item, def url, def classify, def tag, def _url, def _classify, def weibo_main_url, def error_list ->
 
-//    brand   website  agency    campus    均可用
-def do_something_when_brand={   def _item,def url, def classify, def tag, def  _url,def  _classify, def  weibo_main_url,def error_list->
-
-        try{
-            println "$tag $classify $_classify"
-            thrid(_url,[tag,classify,_classify])
-        }
-        catch (ex) {
-            ex.printStackTrace()
-            error_list<<[_url,_classify]
-        }
+    try {
+        println "$tag $classify $_classify"
+        thrid(_url, [tag, classify, _classify])
+    }
+    catch (ex) {
+        ex.printStackTrace()
+        error_list << [_url, _classify]
+    }
 
 
 }
 
 
 
-def run_main(def weibo_main_url,def first,def do_something,def _from){
-    error_list =[]
+def run_main(def weibo_main_url, def first, def do_something, def _from) {
+    error_list = []
 //    int firstLevelSkip = 13
 //    int secondLevelSkip = 3
     int firstLevelSkip = 0
     int secondLevelSkip = 0
     boolean firstTime = true
-    mlist = first( weibo_main_url)[firstLevelSkip..-1]
+    mlist = first(weibo_main_url)[firstLevelSkip..-1]
     //println mlist
-    for (item in mlist){
+    for (item in mlist) {
 
 
-        url =  item[0]?.toString().contains("http://")?item[0][0..-1]:weibo_main_url+item[0][1..-1]
+        url = item[0]?.toString().contains("http://") ? item[0][0..-1] : weibo_main_url + item[0][1..-1]
 
         //url =   weibo_main_url+item[0][1..-1]
-        println "@@@# "+url
-        classify =  item[1]
+        println "@@@# " + url
+        classify = item[1]
         tag = item[2]
-        def loopItem = firstTime?item[3][secondLevelSkip..-1]:item[3]
+        def loopItem = firstTime ? item[3][secondLevelSkip..-1] : item[3]
         firstTime = false
-        for (_item in loopItem){
-            _url = _item[0]?.toString().contains("http://")?_item[0].toString():weibo_main_url[0..-2]+_item[0]
+        for (_item in loopItem) {
+            _url = _item[0]?.toString().contains("http://") ? _item[0].toString() : weibo_main_url[0..-2] + _item[0]
             _classify = _item[1]
             println "#############"
             println _url
             println _classify
-            do_something(_item, url, classify, tag, _url, _classify,weibo_main_url ,error_list )
+            do_something(_item, url, classify, tag, _url, _classify, weibo_main_url, error_list)
         }
 
     }
-    save_file("mlist.obj",mlist)
+    save_file("mlist.obj", mlist)
 }
 
-def save_file(fname="mlist.obj", mlist){
+def save_file(fname = "mlist.obj", mlist) {
     new File(fname).withObjectOutputStream { out ->
         out << mlist
 
     }
 
 }
-def load_from_file(fname="mlist.obj") {
+
+def load_from_file(fname = "mlist.obj") {
     def res;
     new File("config").withObjectInputStream { instream ->
-        res =instream.readObject()
+        res = instream.readObject()
     }
     return res
 }
 
-
-
 //用于media的first
-def media_first =  {  def url    ->
+def media_first = {  def url ->
     //[url,classify,tag,[ [_ul,_classify],,,]]
     results = []
     def cleaner = new HtmlCleaner()
@@ -335,46 +332,44 @@ def media_first =  {  def url    ->
     def xml = serializer.getXmlAsString(node)
 
 // Parse the XML into a document we can work with
-    def page = new XmlSlurper(false,false).parseText(xml)
+    def page = new XmlSlurper(false, false).parseText(xml)
 
-    page.'**'.findAll{ it.@class == 'id_nav clearfix'}.eachWithIndex{item,i->
-        item.'**'.findAll {it.@class == 'nav_barMain'}.eachWithIndex {item2,i2->
+    page.'**'.findAll { it.@class == 'id_nav clearfix'}.eachWithIndex {item, i ->
+        item.'**'.findAll {it.@class == 'nav_barMain'}.eachWithIndex {item2, i2 ->
             println i2
 
-            tag = i2==0?"industry":"area"
-            if(i2<=1){
-                item2.'**'.findAll {it.@class == 'nav_aItem'}.eachWithIndex {item3,i3->
+            tag = i2 == 0 ? "industry" : "area"
+            if (i2 <= 1) {
+                item2.'**'.findAll {it.@class == 'nav_aItem'}.eachWithIndex {item3, i3 ->
 
-                    r =  item3.'**'.find{it.@class=='a_link'}
-                    classify = r.toString().replaceAll(">","")
-                    url_right =  r.@href
+                    r = item3.'**'.find {it.@class == 'a_link'}
+                    classify = r.toString().replaceAll(">", "")
+                    url_right = r.@href
                     println classify
                     println url_right
-                    rr = [url_right,classify,tag,[]]
-                    item3.'**'.findAll{it.@class=='child_link'}.eachWithIndex { item4,i4->
+                    rr = [url_right, classify, tag, []]
+                    item3.'**'.findAll {it.@class == 'child_link'}.eachWithIndex { item4, i4 ->
                         println item4.@href
                         println item4.toString()
 
-                        rr[3]<<[item4.@href, item4.toString()]
+                        rr[3] << [item4.@href, item4.toString()]
 
                     }
-                    results<<rr
-            }
+                    results << rr
+                }
 
 
             }
 
         }
     }
-    return  results
+    return results
 }
-
 
 //print first( 'http://verified.weibo.com/')
 //second("http://verified.weibo.com/fame/yingshi")
 //thrid("http://verified.weibo.com/fame/anhui?srt=4&city=1",["area","安徽","合肥"])
 //thrid_last("http://verified.weibo.com/fame/anhui?srt=4&city=1&rt=0&letter=h",["area","安徽","合肥"])
-
 
 //save_file()
 //run_main()
@@ -388,7 +383,6 @@ def media_first =  {  def url    ->
 //println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])
 //media_first("http://verified.weibo.com/media/")
 
-
 //run_main("http://verified.weibo.com/",first,do_something_when_fame   ,_from="fame")  //抓fame的
 //run_main("http://verified.weibo.com/brand/",first,do_something_when_brand, _from="brand")          //抓brand的
 //run_main("http://verified.weibo.com/website/",first,do_something_when_brand, _from="website")          //抓website的
@@ -396,6 +390,6 @@ def media_first =  {  def url    ->
 //run_main("http://verified.weibo.com/agency/",first,do_something_when_brand, _from="agency")       //抓agency的
 //run_main("http://verified.weibo.com/campus/",first,do_something_when_brand, _from="campus")      //抓campus的
 
-run_main("http://verified.weibo.com/media/",media_first,do_something_when_brand, _from="media")         //抓media的
+run_main("http://verified.weibo.com/media/", media_first, do_something_when_brand, _from = "media")         //抓media的
 
 
