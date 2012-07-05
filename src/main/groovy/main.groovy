@@ -310,12 +310,18 @@ def run_main(def weibo_main_url,def do_something,def _from){
 
 
 def save_file(fname="mlist.obj", mlist){
-    new File(fname).write(mlist.toString())
+    new File(fname).withObjectOutputStream { out ->
+        out << mlist
+
+    }
 
 }
 def load_from_file(fname="mlist.obj") {
-      return new File(fname).readLines()
-
+    def res;
+    new File("config").withObjectInputStream { instream ->
+        res =instream.readObject()
+    }
+    return res
 }
 
 
