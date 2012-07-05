@@ -12,8 +12,6 @@ import it.tika.weibo.grepper.Famous
 
 
 
-def  weibo_main_url = 'http://verified.weibo.com/'
-
 
 def first_last(text) {
 
@@ -57,7 +55,7 @@ def first(def url) {
             while (matcher2.find()) {
 
                 content2 = matcher2.group()
-                //println content2
+                println content2
                 def url_right = content2.substring(content2.indexOf("a_inner\\\"> <a href=\\\"") + "a_inner\\\"> <a href=\\\"".length(), content2.indexOf("\" class=\\\"a_link\\\""))
                 def classify = content2.substring(content2.indexOf("class=\\\"a_link\\\">") + "class=\\\"a_link\\\">".length(), content2.indexOf("<em class=\\\"nav_arr\\"))
                 url_right = url_right.replaceAll('\\\\', '')
@@ -169,17 +167,17 @@ def thrid_get_persons(def content, def clist){
 
         title = Tools.unicodeToString(title)
 
-        def famous = new Famous(uid: uid, name: title, url: weibo_url)
-        Set s = new HashSet()
-        s.addAll(clist[1..-1])
-        famous.setFields(s)
-        FamousDB.instance.addLog(famous)
+//        def famous = new Famous(uid: uid, name: title, url: weibo_url)
+//        Set s = new HashSet()
+//        s.addAll(clist[1..-1])
+//        famous.setFields(s)
+//        FamousDB.instance.addLog(famous)
 
         println   "$uid $title $weibo_url $weibo_avatar"
         println clist
-/*        def f = new File("r2.txt")
+        def f = new File("r3.txt")
         f.append("# $uid $title $weibo_url $weibo_avatar\n")
-        f.append(clist.toString()+"\n")*/
+        f.append(clist.toString()+"\n")
 
     }
 
@@ -206,13 +204,13 @@ def thrid_last(def url, def clist ,def page_num = 1) {
     }
 }
 
-def run_main(){
+def run_main(def weibo_main_url,boolean  notFromHallOfFame){
     error_list =[]
-    def weibo_main_url = 'http://verified.weibo.com/'
-    int firstLevelSkip = 13
-    int secondLevelSkip = 3
-//    int firstLevelSkip = 0
-//    int secondLevelSkip = 0
+
+//    int firstLevelSkip = 13
+//    int secondLevelSkip = 3
+    int firstLevelSkip = 0
+    int secondLevelSkip = 0
     boolean firstTime = true
     mlist = first( weibo_main_url)[firstLevelSkip..-1]
     //println mlist
@@ -228,7 +226,7 @@ def run_main(){
             println "#############"
             println _url
             println _classify
-            if(tag=="area"){
+            if(tag=="area" || notFromHallOfFame){
                 try{
                     println "$tag $classify $_classify"
                     thrid(_url,[tag,classify,_classify])
@@ -300,7 +298,9 @@ def load_from_file(fname="mlist.obj") {
 
 //def res = load_from_file("mlist.obj")
 
-
-run_main()
-
-
+// media = "http://media.weibo.com/home/"
+//run_main("http://verified.weibo.com/")
+//run_main(media,true)
+// println first(media)
+//println second("http://verified.weibo.com/fame/yingshi")
+println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])

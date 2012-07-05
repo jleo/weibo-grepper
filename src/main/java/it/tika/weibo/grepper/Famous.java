@@ -15,6 +15,17 @@ public class Famous {
     String name;
     Set fields = new HashSet();
     String url;
+    String kind;//比如是从名人堂，媒体汇，品牌馆等最大分类
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+
 
     public String getUid() {
         return uid;
