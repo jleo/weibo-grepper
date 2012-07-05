@@ -47,13 +47,15 @@ def first(def url) {
     url.toURL().eachLine {line ->
         def pattern1 = ~"nav_barMain.*?(?=nav_barMain)"
         def matcher1 = line =~ pattern1
-        i = 0
+        int i = 0
         while (matcher1.find()) {
+
             content = matcher1.group()
             def pattern2 = ~/a_inner.*?(?=nav_aItem)|a_inner.*/
             def matcher2 = content =~ pattern2
 
             while (matcher2.find()) {
+
                 content2 = matcher2.group()
                 //println content2
                 def url_right = content2.substring(content2.indexOf("a_inner\\\"> <a href=\\\"") + "a_inner\\\"> <a href=\\\"".length(), content2.indexOf("\" class=\\\"a_link\\\""))
@@ -64,12 +66,15 @@ def first(def url) {
                 //println url_right
                 //println classify
                 tag = i==0?"industry":"area"
-                res = first_last(content2)
-                results<<[url_right, classify , tag,res]
-                println "==="
-
+                println tag
+                println classify
+             //   if(tag == "area")     {
+                    res = first_last(content2)
+                    results<<[url_right, classify , tag,res]
+                    println "==="
+            //    }
             }
-            i++
+            i = i+1
 
         }
 
@@ -139,6 +144,9 @@ def thrid(def base_url,def clist) {
             thrid_last(url, clist)
         }catch(ex){
             ex.printStackTrace()
+            errorfile= new File("error.txt")
+            errorfile.append("#$url\n")
+            errorfile.append(clist.toString()+"\n")
         }
 
     }
@@ -150,7 +158,7 @@ def thrid_get_persons(def content, def clist){
 
     while (matcher1.find()) {
         _content = matcher1.group()
-//        println _content
+
         uid =  _content.substring(_content.indexOf("uid=")+"uid=".length(), _content.indexOf("\\\"",_content.indexOf("uid=")+"uid=".length()))
         title = _content.substring(_content.indexOf("title=\\\"")+"title=\\\"".length(), _content.indexOf("\\\"",_content.indexOf("title=\\\"")+"title=\\\"".length()))
         weibo_url = _content.substring(_content.indexOf("a target=\\\"_blank\\\" href=\\\"")+"a target=\\\"_blank\\\" href=\\\"".length(), _content.indexOf("\\\"",_content.indexOf("a target=\\\"_blank\\\" href=\\\"")+"a target=\\\"_blank\\\" href=\\\"".length()))
@@ -172,11 +180,11 @@ def thrid_get_persons(def content, def clist){
 
         FamousDB.instance.addLog(famous)
 
-        println   "$uid $title"
+        println   "$uid $title $weibo_url $weibo_avatar"
         println clist
-//        def f = new File("r.txt")
-//        f.append("# $uid $title $weibo_url $weibo_avatar\n")
-//        f.append(clist.toString()+"\n")
+/*        def f = new File("r2.txt")
+        f.append("# $uid $title $weibo_url $weibo_avatar\n")
+        f.append(clist.toString()+"\n")*/
 
     }
 
@@ -208,6 +216,8 @@ def run_main(){
     def weibo_main_url = 'http://verified.weibo.com/'
     int firstLevelSkip = 13
     int secondLevelSkip = 3
+//    int firstLevelSkip = 0
+//    int secondLevelSkip = 0
     boolean firstTime = true
     mlist = first( weibo_main_url)[firstLevelSkip..-1]
     //println mlist
@@ -223,34 +233,42 @@ def run_main(){
             println "#############"
             println _url
             println _classify
-            try{
-                _res = second(_url)
-                if(_res ==null ){
-                    println _url
+            if(tag=="area"){
+                try{
                     println "$tag $classify $_classify"
-
                     thrid(_url,[tag,classify,_classify])
-                }else{
-                    _item<<_res
-                    println "$tag $classify $_classify"
-                    for (r in _res){
-                        println"@@"
-                        uurl = weibo_main_url[0..-2]+r[0]
-                        println r[1]
-                        thrid(uurl,[tag,classify,_classify,r[1]])
+                }
+                catch (ex) {
+                    ex.printStackTrace()
+                    error_list<<[_url,_classify]
+                }
 
+            }else{
+                try{
+                    _res = second(_url)
+                    if(_res ==null ){
+                        println _url
+                        println "$tag $classify $_classify"
 
+                        thrid(_url,[tag,classify,_classify])
+                    }else{
+                        _item<<_res
+                        println "$tag $classify $_classify"
+                        for (r in _res){
+                            println"@@"
+                            uurl = weibo_main_url[0..-2]+r[0]
+                            println r[1]
+                            thrid(uurl,[tag,classify,_classify,r[1]])
+                        }
                     }
                 }
-            }
-            catch (ex) {
-                ex.printStackTrace()
-                error_list<<[_url,_classify]
-
-
-
+                catch (ex) {
+                    ex.printStackTrace()
+                    error_list<<[_url,_classify]
+                }
 
             }
+
 
 
 
@@ -264,8 +282,8 @@ def run_main(){
 
 //print first( 'http://verified.weibo.com/')
 //second("http://verified.weibo.com/fame/yingshi")
-//thrid("/fame/peiyinyanyuan/?srt=4")
-//thrid_last("http://verified.weibo.com/fame/yanyuan/?rt=0&srt=4&letter=l")
+//thrid("http://verified.weibo.com/fame/anhui?srt=4&city=1",["area","安徽","合肥"])
+//thrid_last("http://verified.weibo.com/fame/anhui?srt=4&city=1&rt=0&letter=h",["area","安徽","合肥"])
 
 
 def save_file(fname="mlist.obj", mlist){
