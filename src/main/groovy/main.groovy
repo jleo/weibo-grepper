@@ -370,6 +370,10 @@ def nofame_first(def url) {
 
 // media = "http://media.weibo.com/home/"
 
+//println first("http://verified.weibo.com/brand/")
+//println second("http://verified.weibo.com/fame/yingshi")
+//println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])
+
 
 
 //run_main("http://verified.weibo.com/",do_something_when_fame   ,_from="fame")  //抓fame的
@@ -378,6 +382,4 @@ def nofame_first(def url) {
 
 //run_main("http://verified.weibo.com/agency/",do_something_when_brand, _from="agency")       //抓agency的
 run_main("http://verified.weibo.com/campus/",do_something_when_brand, _from="campus")      //抓campus的
-//println first("http://verified.weibo.com/brand/")
-//println second("http://verified.weibo.com/fame/yingshi")
-//println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])
+
