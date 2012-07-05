@@ -169,7 +169,7 @@ def thrid_get_persons(def content, def clist) {
         title = Tools.unicodeToString(title)
 
 
-        def famous = new Famous(uid: uid, name: title, url: weibo_url, kind: _from)
+/*        def famous = new Famous(uid: uid, name: title, url: weibo_url, kind: _from)
         Set s = new HashSet()
 
         s.addAll(clist[1..-1])
@@ -178,7 +178,7 @@ def thrid_get_persons(def content, def clist) {
         if (clist[0] == 'area')
             famous.setAreas(s)
 
-        FamousDB.instance.addLog(famous)
+        FamousDB.instance.addLog(famous)*/
 
 
         println "$uid $title $weibo_url $weibo_avatar"
@@ -274,7 +274,7 @@ def run_main(def weibo_main_url, def first, def do_something, def _from) {
     error_list = []
 //    int firstLevelSkip = 13
 //    int secondLevelSkip = 3
-    int firstLevelSkip = 0
+    int firstLevelSkip = 5
     int secondLevelSkip = 0
     boolean firstTime = true
     mlist = first(weibo_main_url)[firstLevelSkip..-1]
@@ -282,14 +282,24 @@ def run_main(def weibo_main_url, def first, def do_something, def _from) {
     for (item in mlist) {
 
 
-        url = item[0]?.toString().contains("http://") ? item[0][0..-1] : weibo_main_url + item[0][1..-1]
+        url = item[0]?.toString().contains("http://") ? item[0].toString() : weibo_main_url + item[0][1..-1]
 
         //url =   weibo_main_url+item[0][1..-1]
         println "@@@# " + url
         classify = item[1]
         tag = item[2]
-        def loopItem = firstTime ? item[3][secondLevelSkip..-1] : item[3]
-        firstTime = false
+        println classify
+
+        def loopItem
+
+        if (item[3].size() == 0) {
+            loopItem =  [[url,classify]]
+            firstTime = false
+        }   else{
+            loopItem = firstTime ? item[3][secondLevelSkip..-1] : item[3]
+            firstTime = false
+        }
+
         for (_item in loopItem) {
             _url = _item[0]?.toString().contains("http://") ? _item[0].toString() : weibo_main_url[0..-2] + _item[0]
             _classify = _item[1]
@@ -365,7 +375,7 @@ def media_first = {  def url ->
     }
     return results
 }
-
+//########## 用于测试的
 //print first( 'http://verified.weibo.com/')
 //second("http://verified.weibo.com/fame/yingshi")
 //thrid("http://verified.weibo.com/fame/anhui?srt=4&city=1",["area","安徽","合肥"])
@@ -382,6 +392,11 @@ def media_first = {  def url ->
 //println second("http://verified.weibo.com/fame/yingshi")
 //println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])
 //media_first("http://verified.weibo.com/media/")
+//###########end
+
+
+
+/*以下用于抓取*/
 
 //run_main("http://verified.weibo.com/",first,do_something_when_fame   ,_from="fame")  //抓fame的
 //run_main("http://verified.weibo.com/brand/",first,do_something_when_brand, _from="brand")          //抓brand的
