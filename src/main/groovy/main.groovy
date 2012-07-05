@@ -1,7 +1,7 @@
 import Tools
 import it.tika.weibo.grepper.FamousDB
 import it.tika.weibo.grepper.Famous
-
+import org.htmlcleaner.*
 /**
  * Created with IntelliJ IDEA.
  * User: shang
@@ -9,8 +9,6 @@ import it.tika.weibo.grepper.Famous
  * Time: 下午10:24
  * To change this template use File | Settings | File Templates.
  */
-
-
 
 
 def first_last(text) {
@@ -40,7 +38,7 @@ def first_last(text) {
 * first( 'http://verified.weibo.com/')
 */
 
-def first(def url) {
+def first = {   def url ->
     results = []
     url.toURL().eachLine {line ->
         def pattern1 = ~"nav_barMain.*?(?=nav_barMain)"
@@ -257,6 +255,7 @@ def do_something_when_fame ={   def _item,def url, def classify, def tag, def  _
 }
 
 
+//    brand   website  agency    campus    均可用
 def do_something_when_brand={   def _item,def url, def classify, def tag, def  _url,def  _classify, def  weibo_main_url,def error_list->
 
         try{
@@ -273,7 +272,7 @@ def do_something_when_brand={   def _item,def url, def classify, def tag, def  _
 
 
 
-def run_main(def weibo_main_url,def do_something,def _from){
+def run_main(def weibo_main_url,def first,def do_something,def _from){
     error_list =[]
 //    int firstLevelSkip = 13
 //    int secondLevelSkip = 3
@@ -283,13 +282,18 @@ def run_main(def weibo_main_url,def do_something,def _from){
     mlist = first( weibo_main_url)[firstLevelSkip..-1]
     //println mlist
     for (item in mlist){
-        url =  weibo_main_url+item[0][1..-1]
+
+
+        url =  item[0]?.toString().contains("http://")?item[0][0..-1]:weibo_main_url+item[0][1..-1]
+
+        //url =   weibo_main_url+item[0][1..-1]
+        println "@@@# "+url
         classify =  item[1]
         tag = item[2]
         def loopItem = firstTime?item[3][secondLevelSkip..-1]:item[3]
         firstTime = false
         for (_item in loopItem){
-            _url = weibo_main_url[0..-2]+_item[0]
+            _url = _item[0]?.toString().contains("http://")?_item[0].toString():weibo_main_url[0..-2]+_item[0]
             _classify = _item[1]
             println "#############"
             println _url
@@ -298,16 +302,8 @@ def run_main(def weibo_main_url,def do_something,def _from){
         }
 
     }
-
-
     save_file("mlist.obj",mlist)
 }
-
-//print first( 'http://verified.weibo.com/')
-//second("http://verified.weibo.com/fame/yingshi")
-//thrid("http://verified.weibo.com/fame/anhui?srt=4&city=1",["area","安徽","合肥"])
-//thrid_last("http://verified.weibo.com/fame/anhui?srt=4&city=1&rt=0&letter=h",["area","安徽","合肥"])
-
 
 def save_file(fname="mlist.obj", mlist){
     new File(fname).withObjectOutputStream { out ->
@@ -326,47 +322,58 @@ def load_from_file(fname="mlist.obj") {
 
 
 
-
-def nofame_first(def url) {
+//用于media的first
+def media_first =  {  def url    ->
+    //[url,classify,tag,[ [_ul,_classify],,,]]
     results = []
-    url.toURL().eachLine {line ->
-        def pattern1 = ~"nav_barMain.*?(?=nav_barMain)"
-        def matcher1 = line =~ pattern1
-        int i = 0
-        while (matcher1.find()) {
+    def cleaner = new HtmlCleaner()
+    def node = cleaner.clean(url.toURL())
 
-            content = matcher1.group()
-            def pattern2 = ~/a_inner.*?(?=nav_aItem)|a_inner.*/
-            def matcher2 = content =~ pattern2
+// Convert from HTML to XML
+    def props = cleaner.getProperties()
+    def serializer = new SimpleXmlSerializer(props)
+    def xml = serializer.getXmlAsString(node)
 
-            while (matcher2.find()) {
+// Parse the XML into a document we can work with
+    def page = new XmlSlurper(false,false).parseText(xml)
 
-                content2 = matcher2.group()
-                println content2
-                def url_right = content2.substring(content2.indexOf("a_inner\\\"> <a href=\\\"") + "a_inner\\\"> <a href=\\\"".length(), content2.indexOf("\" class=\\\"a_link\\\""))
-                def classify = content2.substring(content2.indexOf("class=\\\"a_link\\\">") + "class=\\\"a_link\\\">".length(), content2.indexOf("<em class=\\\"nav_arr\\"))
-                url_right = url_right.replaceAll('\\\\', '')
+    page.'**'.findAll{ it.@class == 'id_nav clearfix'}.eachWithIndex{item,i->
+        item.'**'.findAll {it.@class == 'nav_barMain'}.eachWithIndex {item2,i2->
+            println i2
 
-                classify = Tools.unicodeToString(classify.toString())
-                //println url_right
-                //println classify
-                tag = i==0?"industry":"area"
-                println tag
-                println classify
-                //   if(tag == "area")     {
-                res = first_last(content2)
-                results<<[url_right, classify , tag,res]
-                println "==="
-                //    }
+            tag = i2==0?"industry":"area"
+            if(i2<=1){
+                item2.'**'.findAll {it.@class == 'nav_aItem'}.eachWithIndex {item3,i3->
+
+                    r =  item3.'**'.find{it.@class=='a_link'}
+                    classify = r.toString().replaceAll(">","")
+                    url_right =  r.@href
+                    println classify
+                    println url_right
+                    rr = [url_right,classify,tag,[]]
+                    item3.'**'.findAll{it.@class=='child_link'}.eachWithIndex { item4,i4->
+                        println item4.@href
+                        println item4.toString()
+
+                        rr[3]<<[item4.@href, item4.toString()]
+
+                    }
+                    results<<rr
             }
-            i = i+1
+
+
+            }
 
         }
-
-
     }
-    return results
+    return  results
 }
+
+
+//print first( 'http://verified.weibo.com/')
+//second("http://verified.weibo.com/fame/yingshi")
+//thrid("http://verified.weibo.com/fame/anhui?srt=4&city=1",["area","安徽","合肥"])
+//thrid_last("http://verified.weibo.com/fame/anhui?srt=4&city=1&rt=0&letter=h",["area","安徽","合肥"])
 
 
 //save_file()
@@ -379,13 +386,16 @@ def nofame_first(def url) {
 //println first("http://verified.weibo.com/brand/")
 //println second("http://verified.weibo.com/fame/yingshi")
 //println thrid("http://verified.weibo.com/media/jgb/?srt=4",["haha","11","22"])
+//media_first("http://verified.weibo.com/media/")
 
 
+//run_main("http://verified.weibo.com/",first,do_something_when_fame   ,_from="fame")  //抓fame的
+//run_main("http://verified.weibo.com/brand/",first,do_something_when_brand, _from="brand")          //抓brand的
+//run_main("http://verified.weibo.com/website/",first,do_something_when_brand, _from="website")          //抓website的
 
-//run_main("http://verified.weibo.com/",do_something_when_fame   ,_from="fame")  //抓fame的
-//run_main("http://verified.weibo.com/brand/",do_something_when_brand, _from="brand")          //抓brand的
-//run_main("http://verified.weibo.com/website/",do_something_when_brand, _from="website")          //抓website的
+//run_main("http://verified.weibo.com/agency/",first,do_something_when_brand, _from="agency")       //抓agency的
+//run_main("http://verified.weibo.com/campus/",first,do_something_when_brand, _from="campus")      //抓campus的
 
-//run_main("http://verified.weibo.com/agency/",do_something_when_brand, _from="agency")       //抓agency的
-run_main("http://verified.weibo.com/campus/",do_something_when_brand, _from="campus")      //抓campus的
+run_main("http://verified.weibo.com/media/",media_first,do_something_when_brand, _from="media")         //抓media的
+
 
