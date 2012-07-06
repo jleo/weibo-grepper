@@ -64,6 +64,7 @@ public class FamousDB {
                 sampleObject.put("fields", result.getFields());
                 sampleObject.put("areas", result.getAreas());
                 sampleObject.put("relationStatus", result.getRelationStatus());
+                sampleObject.put("kind", result.getKind());
 
                 db.getCollection(urlCollectionName).insert(sampleObject);
             } catch (MongoException e) {
@@ -93,6 +94,9 @@ public class FamousDB {
 
             if (result.getRelationStatus() != null)
                 object.put("relationStatus", result.getRelationStatus());
+
+            if (result.getKind() != null)
+                object.put("kind", result.getKind());
 
             db.getCollection(urlCollectionName).save(object);
         }
