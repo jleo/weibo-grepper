@@ -19,7 +19,7 @@ import java.util.concurrent.ArrayBlockingQueue
  * To change this template use File | Settings | File Templates.
  */
 class VFanGrepper {
-    private static threadNumber = 5;
+    private static threadNumber = 20;
     private static BlockingQueue queue = new ArrayBlockingQueue(threadNumber);
 
     public static void main(String[] args) {
@@ -43,6 +43,8 @@ class VFanGrepper {
             username = args[0]
             passwd = args[1]
         }
+
+
 
         SinaLogin.login(username, passwd)
         SinaLogin.client.getCookieSpecs().register("easy", csf);

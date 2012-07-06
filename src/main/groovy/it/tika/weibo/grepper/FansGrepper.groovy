@@ -30,14 +30,17 @@ class FansGrepper {
 
             HttpGet get = new HttpGet(url)
 
-            String target=""
-            def result = SinaLogin.client.execute(get)
+            String target = ""
             try {
+                def result = SinaLogin.client.execute(get)
                 def content = result.getEntity().getContent().text
                 content.eachLine {it ->
                     if (it.indexOf("\"pid\":\"pl_relation_hisFans\"") != -1)
                         target = it
                 }
+            } catch (SocketTimeoutException e) {
+                println "timed out,skip this page"
+                return
             } catch (e) {
                 last = true
                 return
