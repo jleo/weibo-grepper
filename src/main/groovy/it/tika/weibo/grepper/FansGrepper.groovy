@@ -13,11 +13,16 @@ class FansGrepper {
     String uid
 
     def getFans() {
-            def fanSet = new HashSet()
+        Famous famous = new Famous(uid: uid)
+        famous.relationStatus = "UPDATING"
+
+        FamousDB.instance.insert(famous)
+
+        def fanSet = new HashSet()
         def last = false
         (1..250).each {page ->
-            print "page " + page
-            if(last)
+            println "page " + page
+            if (last)
                 return
 
             String url = WeiboURLConstant.getFansURLByPage(uid, page)
@@ -25,15 +30,20 @@ class FansGrepper {
 
             HttpGet get = new HttpGet(url)
 
+            String target=""
             def result = SinaLogin.client.execute(get)
-            def content = result.getEntity().getContent().text
-            String target
-            content.eachLine {it->
-                if(it.indexOf("\"pid\":\"pl_relation_hisFans\"")!=-1)
-                    target = it
+            try {
+                def content = result.getEntity().getContent().text
+                content.eachLine {it ->
+                    if (it.indexOf("\"pid\":\"pl_relation_hisFans\"") != -1)
+                        target = it
+                }
+            } catch (e) {
+                last = true
+                return
             }
 
-            if(target.indexOf("\\u8fd8\\u6ca1\\u6709\\u4eba\\u5173\\u6ce8")!=-1){
+            if (target.indexOf("\\u8fd8\\u6ca1\\u6709\\u4eba\\u5173\\u6ce8") != -1) {
                 last = true
                 return
             }
@@ -42,7 +52,6 @@ class FansGrepper {
             }
             println fanSet.size()
         }
-        Famous famous = new Famous(uid: uid)
         famous.relationStatus = "DONE"
 
         FamousDB.instance.insert(famous)
@@ -55,7 +64,7 @@ class FansGrepper {
     }
 
     public static void main(String[] args) {
-        SinaLogin.login("ggyyleo@gmail.com","3jf2hf1l")
+        SinaLogin.login("ggyyleo@gmail.com", "3jf2hf1l")
 
         FansGrepper grepper = new FansGrepper(uid: "1197161814")
         grepper.getFans()

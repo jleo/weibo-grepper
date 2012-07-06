@@ -12,6 +12,55 @@
 
     <build>
         <plugins>
+
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <version>1.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>1.0-beta-4</version>
+                <executions>
+                    <execution>
+                        <id>upload-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <fromDir>/Users/jleo/Development/groovy/weibo-grepper/weibo-grepper/target</fromDir>
+                            <includes>weibo-grepper-1.0-SNAPSHOT.jar</includes>
+                            <serverId>tika</serverId>
+                            <url>scp://58.215.170.154</url>
+                            <toDir>/root/weibo-grepper</toDir>
+                        </configuration>
+                    </execution>
+                    <!--<execution>-->
+                        <!--<id>upload-dep-jar</id>-->
+                        <!--<phase>install</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>upload</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<fromDir>/Users/jleo/Development/groovy/weibo-grepper/weibo-grepper/target/dist/lib</fromDir>-->
+                            <!--<includes>*.jar</includes>-->
+                            <!--<serverId>tika</serverId>-->
+                            <!--<url>scp://58.215.170.154</url>-->
+                            <!--<toDir>/root/weibo-grepper/lib</toDir>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-ssh</artifactId>
+                        <version>1.0-beta-7</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.gmaven</groupId>
                 <artifactId>gmaven-plugin</artifactId>
@@ -50,6 +99,23 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -75,6 +141,11 @@
             <groupId>org.ccil.cowan.tagsoup</groupId>
             <artifactId>tagsoup</artifactId>
             <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.0.1</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jchardet</groupId>
