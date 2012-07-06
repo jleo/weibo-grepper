@@ -22,13 +22,15 @@ public class MongoDBFactory {
             }
 
             String host = "localhost";
+            String dbName = "weibo";
             int port = 27017;
 
             if (config != null) {
                 host = config.getString("mongo.host", host);
                 port = config.getInt("mongo.port", port);
+                dbName = config.getString("mongo.db", dbName);
             }
-            db = new Mongo(host, port).getDB("weibo");
+            db = new Mongo(host, port).getDB(dbName);
 
             if (config != null) {
                 String user = config.getString("mongo.username");

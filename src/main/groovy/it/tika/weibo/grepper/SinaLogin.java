@@ -4,13 +4,23 @@ import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.HTTP;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,8 +33,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
  
 public class SinaLogin {
- 
-	private final static HttpClient client = new DefaultHttpClient();
+
+	public static DefaultHttpClient client;
  
 	/**
 	 * 抓取网页
@@ -49,10 +59,23 @@ public class SinaLogin {
 	 * 
 	 * @param user
 	 * @param pwd
-	 * @param debug
 	 * @throws IOException
 	 */
 	static void login(String user, String pwd) throws IOException {
+
+        HttpParams params = new BasicHttpParams();
+        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+        HttpProtocolParams.setContentCharset(params, HTTP.DEFAULT_CONTENT_CHARSET);
+        HttpProtocolParams.setUseExpectContinue(params, true);
+
+        SchemeRegistry registry = new SchemeRegistry();
+        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        registry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+
+        ClientConnectionManager connman = new ThreadSafeClientConnManager(params, registry);
+        client = new DefaultHttpClient(connman, params);
+
+        System.out.println("Login user: "+user);
 		HttpPost post = new HttpPost(
 				"http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.3.22)");
 		post.setHeader("User-Agent",
@@ -87,8 +110,8 @@ public class SinaLogin {
 		qparams.add(new BasicNameValuePair("returntype", "META"));
  
 
-		UrlEncodedFormEntity params = new UrlEncodedFormEntity(qparams, "UTF-8");
-		post.setEntity(params);
+		UrlEncodedFormEntity params2 = new UrlEncodedFormEntity(qparams, "UTF-8");
+		post.setEntity(params2);
  
 		// Execute the request
 		HttpResponse response = client.execute(post);
@@ -113,6 +136,7 @@ public class SinaLogin {
 	}
  
 	private static String getRedirectLocation(String content) {
+        System.out.println(content);
 		String regex = "location\\.replace\\(\'(.*?)\'\\)";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(content);
