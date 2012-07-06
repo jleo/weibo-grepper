@@ -169,7 +169,7 @@ def thrid_get_persons(def content, def clist) {
         title = Tools.unicodeToString(title)
 
 
-/*        def famous = new Famous(uid: uid, name: title, url: weibo_url, kind: _from)
+        def famous = new Famous(uid: uid, name: title, url: weibo_url, kind: _from)
         Set s = new HashSet()
 
         s.addAll(clist[1..-1])
@@ -178,7 +178,7 @@ def thrid_get_persons(def content, def clist) {
         if (clist[0] == 'area')
             famous.setAreas(s)
 
-        FamousDB.instance.addLog(famous)*/
+        FamousDB.instance.addLog(famous)
 
 
         println "$uid $title $weibo_url $weibo_avatar"
